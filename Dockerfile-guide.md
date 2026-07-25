@@ -507,7 +507,7 @@ This guide explains how to build and run a Docker image from a `Dockerfile` step
 Before you begin, make sure you have:
 
 - Docker Desktop installed (Windows/macOS) or Docker Engine (Linux)
-- Docker is running
+- Docker is running (docker desktop is running)
 - A project containing a `Dockerfile`
 
 Example project structure:
