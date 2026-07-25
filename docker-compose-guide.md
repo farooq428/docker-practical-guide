@@ -527,7 +527,7 @@ Backend starts after MongoDB.
 
 # 11. command
 
-Overrides Dockerfile CMD.
+Overrides Dockerfile CMD. (if you dont need to overrite than skip it)
 
 ```yaml
 command: npm start
@@ -554,12 +554,17 @@ cd /app
 # 13. stdin_open
 
 Keeps STDIN open.
+STDIN stands for Standard Input.
+
+It is the input channel through which a program receives data from the keyboard.
+Normally, when a container starts, it runs its command. If the command doesn't need any user input, Docker closes the input stream.
+By setting:
 
 ```yaml
 stdin_open: true
 ```
 
-Useful for interactive containers.
+Docker keeps the input stream open, allowing you to interact with the running container..
 
 ---
 
