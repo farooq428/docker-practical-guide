@@ -950,3 +950,494 @@ With Docker Compose, you can:
 - Start the complete application with one command
 
 For MERN Stack applications, Docker Compose is the standard way to run the frontend, backend, MongoDB, Redis, and other supporting services together in a consistent and repeatable environment.
+
+
+---
+
+# Practical Example - React Frontend + Express Backend
+
+Let's suppose we have the following project structure.
+
+```
+mern-app/
+
+│
+├── frontend/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── src/
+│
+├── backend/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── server.js
+│
+└── compose.yml
+```
+
+---
+
+# Frontend Dockerfile (React + Vite)
+
+Location
+
+```
+frontend/Dockerfile
+```
+
+```dockerfile
+FROM node:22
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 5173
+
+CMD ["npm","run","dev","--","--host"]
+```
+
+### Explanation
+
+- Uses the official Node.js image.
+- Creates the `/app` working directory.
+- Installs dependencies.
+- Copies the React project.
+- Exposes port **5173** (default Vite port).
+- Starts the React development server.
+
+---
+
+# Backend Dockerfile (Express)
+
+Location
+
+```
+backend/Dockerfile
+```
+
+```dockerfile
+FROM node:22
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 5000
+
+CMD ["npm","start"]
+```
+
+### Explanation
+
+- Uses Node.js.
+- Copies the Express application.
+- Installs dependencies.
+- Opens port **5000**.
+- Starts the Express server.
+
+---
+
+# Docker Compose File
+
+Location
+
+```
+compose.yml
+```
+
+```yaml
+services:
+
+  frontend:
+
+    build: ./frontend
+
+    container_name: react-frontend
+
+    ports:
+      - "5173:5173"
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+    depends_on:
+      - backend
+
+  backend:
+
+    build: ./backend
+
+    container_name: express-backend
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+    environment:
+      PORT: 5000
+
+    restart: unless-stopped
+```
+
+---
+
+# Understanding the Compose File
+
+## Frontend Service
+
+```yaml
+frontend:
+```
+
+Creates the React container.
+
+---
+
+```yaml
+build: ./frontend
+```
+
+Builds the image using
+
+```
+frontend/Dockerfile
+```
+
+---
+
+```yaml
+ports:
+
+  - "5173:5173"
+```
+
+Maps
+
+```
+Your Browser
+
+↓
+
+localhost:5173
+
+↓
+
+React Container
+```
+
+---
+
+```yaml
+volumes:
+
+  - ./frontend:/app
+```
+
+Syncs your local React project with the container.
+
+Whenever you edit your React files, the changes are immediately available inside the container.
+
+---
+
+```yaml
+- /app/node_modules
+```
+
+Prevents the local `node_modules` directory from replacing the container's installed dependencies.
+
+---
+
+```yaml
+depends_on:
+
+  - backend
+```
+
+Starts the backend container before the frontend container.
+
+---
+
+# Backend Service
+
+```yaml
+backend:
+```
+
+Creates the Express container.
+
+---
+
+```yaml
+build: ./backend
+```
+
+Uses
+
+```
+backend/Dockerfile
+```
+
+to build the backend image.
+
+---
+
+```yaml
+ports:
+
+  - "5000:5000"
+```
+
+Maps
+
+```
+localhost:5000
+
+↓
+
+Express Container
+```
+
+---
+
+```yaml
+environment:
+
+  PORT: 5000
+```
+
+Sets environment variables inside the container.
+
+---
+
+```yaml
+restart: unless-stopped
+```
+
+Automatically restarts the backend if it crashes.
+
+---
+
+# Build the Images
+
+```bash
+docker compose build
+```
+
+Docker builds
+
+- React Image
+- Express Image
+
+---
+
+# Start the Application
+
+```bash
+docker compose up
+```
+
+or
+
+```bash
+docker compose up -d
+```
+
+Docker starts
+
+- React Container
+- Express Container
+
+---
+
+# Verify Running Containers
+
+```bash
+docker compose ps
+```
+
+Example
+
+```
+NAME                STATUS          PORTS
+
+react-frontend      running         0.0.0.0:5173->5173
+
+express-backend     running         0.0.0.0:5000->5000
+```
+
+---
+
+# Open the Application
+
+React Frontend
+
+```
+http://localhost:5173
+```
+
+Express Backend
+
+```
+http://localhost:5000
+```
+
+Example API
+
+```
+http://localhost:5000/api/users
+```
+
+---
+
+# View Logs
+
+All containers
+
+```bash
+docker compose logs
+```
+
+Frontend only
+
+```bash
+docker compose logs frontend
+```
+
+Backend only
+
+```bash
+docker compose logs backend
+```
+
+Live logs
+
+```bash
+docker compose logs -f
+```
+
+---
+
+# Enter a Running Container
+
+Frontend
+
+```bash
+docker compose exec frontend sh
+```
+
+Backend
+
+```bash
+docker compose exec backend sh
+```
+
+If Bash is available
+
+```bash
+docker compose exec backend bash
+```
+
+---
+
+# Stop Containers
+
+```bash
+docker compose stop
+```
+
+---
+
+# Remove Containers
+
+```bash
+docker compose down
+```
+
+---
+
+# Rebuild After Code Changes
+
+If you modify the Dockerfile or dependencies
+
+```bash
+docker compose up --build
+```
+
+Docker rebuilds the images and starts fresh containers.
+
+---
+
+# Complete Workflow
+
+```
+Write Dockerfiles
+
+↓
+
+Write compose.yml
+
+↓
+
+docker compose build
+
+↓
+
+docker compose up -d
+
+↓
+
+Open Browser
+
+↓
+
+React → http://localhost:5173
+
+↓
+
+Express → http://localhost:5000
+
+↓
+
+Develop Your Application
+
+↓
+
+docker compose logs
+
+↓
+
+docker compose down
+```
+
+---
+
+# Communication Between Frontend and Backend
+
+Since both services are on the same Docker Compose network, the frontend can reach the backend using the **service name** instead of `localhost`.
+
+For example, inside the frontend container:
+
+```text
+http://backend:5000
+```
+
+Instead of:
+
+```text
+http://localhost:5000
+```
+
+This works because Docker Compose automatically creates a shared network and provides built-in DNS resolution for service names.
